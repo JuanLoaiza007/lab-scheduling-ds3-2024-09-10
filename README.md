@@ -45,13 +45,23 @@ En este caso vamos a crear 3 nodos, un nodo será el control-plane y los otros s
 
 ### Configuración del cluster
 
-1.  Al nodo control plane se debe configurar para que solo reciba pods de trato "NoSchedule".
+0.  Revisa los nodos que se han creado.
 
-        kubectl taint nodes <node_name> node-role.kubernetes.io/control-plane=:NoSchedule
+        kubectl get nodes
+
+1.  Al nodo control plane se debe configurar para que solo reciba pods de trato "NoSchedule".
 
     > [!NOTE]
     >
     > El taint "NoSchedule" hace que el nodo solo recibe nodos de ese mismo tipo.
+
+        kubectl taint nodes <node_name> node-role.kubernetes.io/control-plane=:NoSchedule
+
+    > [!TIP]
+    >
+    > Para eliminar el taint se usa el mismo comando pero agregando un - al final del taint:
+    >
+    >     kubectl taint nodes <node_name> node-role.kubernetes.io/control-plane-
 
 2.  Asignar la etiqueta el entorno de pruebas en el worker 1 y de entorno de producción en el worker 2.
 
@@ -67,13 +77,13 @@ En este caso vamos a crear 3 nodos, un nodo será el control-plane y los otros s
 
 1.  Crea estos pods de prueba:
 
-        kubectl run test-pod1 –image nginx
-        kubectl run test-pod2 –image nginx
-        kubectl run test-pod3 –image nginx
-        kubectl run test-pod4 –image nginx
-        kubectl run test-pod5 –image nginx
+        kubectl run test-pod1 --image nginx
+        kubectl run test-pod2 --image nginx
+        kubectl run test-pod3 --image nginx
+        kubectl run test-pod4 --image nginx
+        kubectl run test-pod5 --image nginx
 
-2.  Revisa donde se estan ejecutando, observa que ninguno se esta ejecutando en el control plane.
+2.  Revisa donde se estan ejecutando, observa que ninguno se esta ejecutando en el control plane porque el Taint solo recibe nodos marcados con tolerancia a "NoSchedule".
 
         kubectl get pods -o wide
 
@@ -83,23 +93,23 @@ En este caso vamos a crear 3 nodos, un nodo será el control-plane y los otros s
 
 ### Aplicar taint al entorno de producción
 
-1.  Aplicar taint al entorno de producción en el worker 2.
+1.  Aplicar taint al entorno de producción en el worker que tiene el label "environment=production", asi solo recibirá los pods marcados con tolerancia a"NoSchedule".
 
         kubectl taint nodes <node_name> environment=production:NoSchedule
 
 2.  Vuelve a crear los pods y revisa donde quedaron:
 
-        kubectl run test-pod1 –image nginx
-        kubectl run test-pod2 –image nginx
-        kubectl run test-pod3 –image nginx
-        kubectl run test-pod4 –image nginx
-        kubectl run test-pod5 –image nginx
+        kubectl run test-pod1 --image nginx
+        kubectl run test-pod2 --image nginx
+        kubectl run test-pod3 --image nginx
+        kubectl run test-pod4 --image nginx
+        kubectl run test-pod5 --image nginx
 
         kubectl get pods -o wide
 
     > [!TIP]
     >
-    > Los pods se han creado y asignado solo en el worker 1 porque es el único que no tiene taints.
+    > Los pods se han creado y asignado solo en el worker que no tiene el taint.
 
 ### Afinidad de Nodo
 
