@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: goat-test-pod
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+  #  A este pod no hay que meterle tolerancia porque el nodo objetivo no tiene taint
+  affinity: # Reglas de preferencia de donde se tiene que ejecutar
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution: # Mientras programa PERO NO en ejecución, si el nodo deja de ser apto entonces paila.
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: environment # Busqueda por label
+                operator: In
+                values:
+                  - testing
